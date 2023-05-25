@@ -14,7 +14,7 @@ I've written an [article about this on Medium](https://medium.com/@paramaggarwal
 
 This is the primary code flow of the script:
 
-```
+```javascript
 // uses youtube-transcript npm module
 const transcript = await fetchTranscript(YOUTUBE_URL);
 
@@ -34,7 +34,7 @@ await writeStringToFile("conversation.txt", conversation);
 
 And then how to prompt the GPT-3 API:
 
-```
+```javascript
 const chat = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: [
