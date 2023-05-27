@@ -2,12 +2,19 @@ const fs = require("fs");
 const { YoutubeTranscript } = require("youtube-transcript");
 const { Configuration, OpenAIApi } = require("openai");
 
-const YOUTUBE_URL = "https://www.youtube.com/watch?v=1egAKCKPKCk";
+const YOUTUBE_URL = "https://www.youtube.com/watch?v=bZQun8Y4L2A";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
+
+function getVideoID(youtubeURL) {
+  const regExp =
+    /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = youtubeURL.match(regExp);
+  return match && match[7].length == 11 ? match[7] : false;
+}
 
 async function fetchTranscript(youtubeURL) {
   const rawTranscript = await YoutubeTranscript.fetchTranscript(youtubeURL);
@@ -41,7 +48,7 @@ async function convertToConversation(transcript) {
       },
       {
         role: "system",
-        content: `The above is a transcript of a YouTube video. Label the statements and reformat it as a conversation.`,
+        content: `The above is a transcript of a YouTube video. Label the speakers and reformat it as a conversation.`,
       },
     ],
     temperature: 0,
@@ -49,7 +56,7 @@ async function convertToConversation(transcript) {
 
   console.log(
     "Transcript chunk: ",
-    transcript.substr("0, 80"),
+    transcript.substr(0, 80),
     transcript.length + " chars"
   );
 
@@ -87,8 +94,9 @@ async function run() {
   const conversation = conversationChunks.join("\n\n");
   console.log("conversation", conversation);
 
-  await writeStringToFile("conversation.txt", conversation);
-  console.log("Conversation saved to conversation.txt");
+  const fileName = `yt-${getVideoID(YOUTUBE_URL)}.txt`;
+  await writeStringToFile(fileName, conversation);
+  console.log(`Conversation saved to ${fileName}`);
 }
 
 run();
